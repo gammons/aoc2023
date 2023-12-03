@@ -50,7 +50,6 @@ class Board
 
   def process
     @numbers.each do |number|
-      gear_count = 0
       number.coordinates_around.each do |coords|
         char = begin
           @rows[coords[1]][coords[0]]
@@ -59,9 +58,10 @@ class Board
         end
 
         next if char.nil?
+        next if char =~ /\d/ || char == '.'
+        next if @intersecting_numbers.map(&:id).include?(number.id)
 
-        gear_count += 1 if char == '*'
-        puts "Gear count: #{gear_count}" if gear_count > 1
+        @intersecting_numbers << number
       end
     end
   end
@@ -74,4 +74,4 @@ end
 
 board.process
 
-# puts board.intersecting_numbers.map(&:number).inject(:+)
+puts board.intersecting_numbers.map(&:number).inject(:+)
