@@ -1,4 +1,6 @@
 class Number
+  attr_accessor :gear_coords
+
   def initialize(number_string, x, y)
     @number_string = number_string
     @min_x = x
@@ -26,12 +28,12 @@ class Number
 end
 
 class Board
-  attr_reader :numbers, :intersecting_numbers
+  attr_reader :numbers, :gear_ratios
 
   def initialize
     @numbers = []
-    @intersecting_numbers = []
     @rows = []
+    @gear_ratios = []
   end
 
   def add_row(row)
@@ -49,8 +51,8 @@ class Board
   end
 
   def process
+    # first get the coordinates of all the gears
     @numbers.each do |number|
-      gear_count = 0
       number.coordinates_around.each do |coords|
         char = begin
           @rows[coords[1]][coords[0]]
@@ -60,8 +62,18 @@ class Board
 
         next if char.nil?
 
-        gear_count += 1 if char == '*'
-        puts "Gear count: #{gear_count}" if gear_count > 1
+        number.gear_coords = coords if char == '*'
+      end
+    end
+
+    # then get the numbers that intersect with the gears
+    @numbers.each_with_index do |number1, n1|
+      @numbers[n1 + 1..-1].each do |number2|
+        next if number1.id == number2.id
+        next if number1.gear_coords.nil? || number2.gear_coords.nil?
+        next if number1.gear_coords != number2.gear_coords
+
+        @gear_ratios << number1.number * number2.number
       end
     end
   end
@@ -74,4 +86,4 @@ end
 
 board.process
 
-# puts board.intersecting_numbers.map(&:number).inject(:+)
+puts board.gear_ratios.inject(:+)
